@@ -98,6 +98,7 @@ class EmbeddedTD3(object):
     def select_action(self, state, expl_noise=None):
         if self.pending_plan.size(1) == 0:
             state = torch.FloatTensor(state.reshape(1, -1)).to(device)
+            # state = torch.FloatTensor(state).to(device)
             e_action = self.actor(state)
             if expl_noise is not None:
                 noise = torch.from_numpy(np.random.normal(0, expl_noise, size=self.e_action_dim)).float().to(device)

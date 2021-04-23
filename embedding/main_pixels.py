@@ -219,8 +219,8 @@ def build_decoder():
 
         for batch_idx in range(dec_epoch_size):
             z = sample_z_batch()
-            if args.z_from == 'marginal' or args.z_from == 'marginal-scale':
-                z = (z - z_stats[0].detach()) / z_stats[1].detach()
+            # if args.z_from == 'marginal' or args.z_from == 'marginal-scale': #don't seem to be present?
+            z = (z - z_stats[0].detach()) / z_stats[1].detach()
             decoded_action = decoder(z)
             z_hat = model.encode_actions(decoded_action)[0]
             z_hat_white = (z_hat - z_stats[0].detach()) / z_stats[1].detach()

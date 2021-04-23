@@ -8,6 +8,8 @@ Adapted from Scott Fujimoto's excellent implementation: https://github.com/sfuji
 """
 
 import numpy as np
+from rlkit.envs.mujoco_vec_wrappers import make_kitchen_env
+from rlkit.envs.primitives_wrappers import TimeLimit
 import torch
 import gym
 import argparse
@@ -29,16 +31,18 @@ sys.path.insert(0, '../envs')
 import reacher_family
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, eval_episodes=10):
+def evaluate_policy(policy, eval_episodes=5):
     avg_reward = 0.
     for _ in range(eval_episodes):
         obs = env.reset()
         policy.reset()
         done = False
+        ctr = 0
         while not done:
             action, *policy_state = policy.select_action(np.array(obs))
             obs, reward, done, _ = env.step(action)
             avg_reward += reward
+            ctr+=1
 
     avg_reward /= eval_episodes
 
@@ -114,7 +118,26 @@ if __name__ == "__main__":
     if not os.path.exists("./results"):
         os.makedirs("./results")
 
-    env = gym.make(args.env_name)
+    env_suite = 'kitchen'
+    env_kwargs=dict(
+        dense=False,
+        image_obs=True,
+        fixed_schema=False,
+        action_scale=1,
+        use_combined_action_space=True,
+        proprioception=False,
+        wrist_cam_concat_with_fixed_view=False,
+        use_wrist_cam=False,
+        normalize_proprioception_obs=True,
+        use_workspace_limits=True,
+        max_path_length=1000,
+        control_mode="joint_velocity",
+        frame_skip=40,
+    )
+    env = TimeLimit(make_kitchen_env(
+                            env_class=args.env_name,
+                            env_kwargs=env_kwargs,
+                        ), 1000)
     env_max_steps = env._max_episode_steps
 
     # Set seeds
@@ -137,7 +160,7 @@ if __name__ == "__main__":
 
     if args.pixels:
         # `model` contains the state encoder
-        model_path = "../action-embedding/results/{}/{}/model_200.pt".format(args.source_env, args.decoder)
+        model_path = "../embedding/results/{}/{}/model.pt".format(args.source_env, args.decoder)
         print("Loading model from {}".format(model_path))
         model = torch.load(model_path).cuda().eval()
         state_dim = model.state_embed_size
@@ -157,7 +180,7 @@ if __name__ == "__main__":
     # using embedded actions
     elif args.policy_name == "DynE-TD3":
         # `decoder` decodes DynE actions into sequences of raw actions
-        decoder_path = "../action-embedding/results/{}/{}/decoder.pt".format(source_env, args.decoder)
+        decoder_path = "../embedding/results/{}/{}/decoder.pt".format(source_env, args.decoder)
         print("Loading decoder from {}".format(decoder_path))
         decoder = torch.load(decoder_path)
         decoder.max_embedding = float(decoder.max_embedding)
@@ -223,7 +246,6 @@ if __name__ == "__main__":
 
             # policy is stateful because of temporally-extended actions
             policy.reset()
-
 
         # Select action randomly or according to policy
         if total_timesteps < args.start_timesteps:

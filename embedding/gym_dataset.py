@@ -1,8 +1,10 @@
 import random
+from gym.wrappers.time_limit import TimeLimit
 import numpy as np
 import os
 
 import gym
+from rlkit.envs.mujoco_vec_wrappers import make_kitchen_env
 
 import torch
 from torch.utils.data import Dataset
@@ -68,7 +70,27 @@ class GymData(Dataset):
 
 
     def make_env(self):
-        self.env = gym.make(self.env_name)
+        # self.env = gym.make(self.env_name)
+        env_suite = 'kitchen'
+        env_kwargs=dict(
+            dense=False,
+            image_obs=True,
+            fixed_schema=False,
+            action_scale=1,
+            use_combined_action_space=True,
+            proprioception=False,
+            wrist_cam_concat_with_fixed_view=False,
+            use_wrist_cam=False,
+            normalize_proprioception_obs=True,
+            use_workspace_limits=True,
+            max_path_length=1000,
+            control_mode="joint_velocity",
+            frame_skip=40,
+        )
+        self.env = TimeLimit(make_kitchen_env(
+                                env_class=self.env_name,
+                                env_kwargs=env_kwargs,
+                            ), 1000)
         self.env_max_steps = self.env._max_episode_steps
         if hasattr(self.env, 'unwrapped'):
             self.env = self.env.unwrapped

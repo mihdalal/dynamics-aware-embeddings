@@ -11,12 +11,12 @@ class PixelObservationWrapper(Wrapper):
         self.metadata = self.env.metadata
         self.img_width = img_width
         self.source_img_width = source_img_width
-        
+
         self.stack = stack
         self.imgs = [np.zeros([3, self.img_width, self.img_width]) for _ in range(self.stack)]
 
     def render_obs(self, color_last=False):
-        raw_img = self.env.render(mode='rgb_array', height=self.source_img_width, width=self.source_img_width)
+        raw_img = self.env.render(mode='rgb_array', imheight=self.source_img_width, imwidth=self.source_img_width)
         # import ipdb; ipdb.set_trace()
         resized = skimage.transform.resize(raw_img, (self.img_width, self.img_width))
         if color_last: return resized
@@ -27,7 +27,7 @@ class PixelObservationWrapper(Wrapper):
         # return (np.concatenate(self.imgs, axis=0) / 255. - 0.5) * 2
 
         return np.concatenate(self.imgs, axis=0)
-        
+
         # obs = np.concatenate(self.imgs, axis=0)
         # obs.fill(0)
         # return obs
