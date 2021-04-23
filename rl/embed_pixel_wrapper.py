@@ -31,7 +31,7 @@ class EmbedPixelObservationWrapper(Wrapper):
             return processed_obs
 
     def render(self, *args, **kwargs):
-        raw_img = self.env.render(mode='rgb_array', height=self.source_img_width, width=self.source_img_width)
+        raw_img = self.env.render(mode='rgb_array', imheight=self.source_img_width, imwidth=self.source_img_width)
         resized = skimage.transform.resize(raw_img, (self.img_width, self.img_width))
         return resized * 255
 
