@@ -134,10 +134,12 @@ if __name__ == "__main__":
     if args.source_env is not None: source_env = args.source_env
     else: source_env = args.env_name
 
+    if args.pixels:
+        source_env = 'Pixel'+args.env_name
 
     if args.pixels:
         # `model` contains the state encoder
-        model_path = "../action-embedding/results/{}/{}/model_200.pt".format(args.source_env, args.decoder)
+        model_path = "../embedding/results/{}/{}/model.pt".format(source_env, args.decoder)
         print("Loading model from {}".format(model_path))
         model = torch.load(model_path).cuda().eval()
         state_dim = model.state_embed_size
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     # using embedded actions
     elif args.policy_name == "DynE-TD3":
         # `decoder` decodes DynE actions into sequences of raw actions
-        decoder_path = "../action-embedding/results/{}/{}/decoder.pt".format(source_env, args.decoder)
+        decoder_path = "../embedding/results/{}/{}/decoder.pt".format(source_env, args.decoder)
         print("Loading decoder from {}".format(decoder_path))
         decoder = torch.load(decoder_path)
         decoder.max_embedding = float(decoder.max_embedding)
