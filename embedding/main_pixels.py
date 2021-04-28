@@ -221,7 +221,6 @@ def build_decoder():
         for batch_idx in range(dec_epoch_size):
             z = sample_z_batch()
 
-            #TODO: figure out if this is the right thing to do
             if args.z_from == 'marginal' or args.z_from == 'marginal-scale':
                 z = (z - z_stats[0].detach()) / z_stats[1].detach()
             decoded_action = decoder(z)
