@@ -43,6 +43,7 @@ parser.add_argument('--state-embed-size', type=int, default=100)
 parser.add_argument('--env', default='ReacherVertical-v2')
 parser.add_argument('--embed-every', type=int, default=10000)
 parser.add_argument('--decoder-epochs', type=int, default=10)
+parser.add_argument('--z_from', type=str, default='marginal')
 
 parser.add_argument('--source-img-width', type=int, default=64)
 args = parser.parse_args()
@@ -221,8 +222,8 @@ def build_decoder():
             z = sample_z_batch()
 
             #TODO: figure out if this is the right thing to do
-            # if args.z_from == 'marginal' or args.z_from == 'marginal-scale':
-                # z = (z - z_stats[0].detach()) / z_stats[1].detach()
+            if args.z_from == 'marginal' or args.z_from == 'marginal-scale':
+                z = (z - z_stats[0].detach()) / z_stats[1].detach()
             decoded_action = decoder(z)
             z_hat = model.encode_actions(decoded_action)[0]
             z_hat_white = (z_hat - z_stats[0].detach()) / z_stats[1].detach()
